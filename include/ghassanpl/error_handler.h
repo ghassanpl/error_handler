@@ -53,22 +53,22 @@ namespace ghassanpl::error_handling
 	template <unsigned I, typename... ARGS>
 	auto const& get(error_values<ARGS...> const& ev) { return std::get<I>(ev.values); }
 
-	template <typename... ARGS>
-	struct error_handler_handle
+	template <typename DEFAULT_HANDLER, typename... ARGS>
+	struct base_error_handler_handle
 	{
 		using handler_type = error_handler<ARGS...>;
 
 		template <typename T>
 		requires std::is_base_of_v<handler_type, T>
-			error_handler_handle(T& handler)
+		base_error_handler_handle(T& handler) noexcept
 			: mHandler(handler) {}
 
-		error_handler_handle(error_handler_handle&) = default;
+		base_error_handler_handle(base_error_handler_handle&) noexcept = default;
 
 		template <typename T>
-		error_handler_handle(T&&) = delete;
+		base_error_handler_handle(T&&) = delete;
 
-		error_handler_handle()
+		base_error_handler_handle()
 			: mHandler(mDefaultHandler) {}
 
 		template <typename... ERROR_ARGS>
@@ -79,8 +79,10 @@ namespace ghassanpl::error_handling
 
 	private:
 
-		static inline throw_on_error<generic_value_exception<ARGS...>, ARGS...> mDefaultHandler;
+		static inline DEFAULT_HANDLER mDefaultHandler;
 		handler_type& mHandler;
 	};
 
+	template <typename... ARGS>
+	using error_handler_handle = base_error_handler_handle<throw_on_error<generic_value_exception<ARGS...>, ARGS...>, ARGS...>;
 }
