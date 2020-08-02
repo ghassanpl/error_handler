@@ -23,7 +23,6 @@ TEST(error_handler, throws)
 	EXPECT_THROW(read(5), generic_value_exception<int>);
 }
 
-
 TEST(multi_error_handler, throws)
 {
 	auto read = [](int from, std::string str, multi_error_handler_handle<error_handler<int>, error_handler<std::string>> handler = {}) {
@@ -42,6 +41,23 @@ TEST(multi_error_handler, throws)
 	read(5, "hello", { e1, e2 });
 	EXPECT_EQ(get<0>(e2), "hello");
 }
+
+TEST(multi_error_handler, functions_convert_arguments)
+{
+	using multi_handler_type = multi_error_handler_handle<error_handler<int>, error_handler<std::string>>;
+
+	EXPECT_TRUE((can_error_with<multi_handler_type, int>));
+	EXPECT_TRUE((can_error_with<multi_handler_type, double>));
+	EXPECT_TRUE((can_error_with<multi_handler_type, decltype("hello")>));
+}
+
+TEST(multi_error_handler, invalid_arguments_are_invalid)
+{
+	using multi_handler_type = multi_error_handler_handle<error_handler<int>, error_handler<std::string>>;
+	EXPECT_FALSE((can_error_with<multi_handler_type, std::type_info>));
+}
+
+
 
 int main(int argc, char** argv)
 {
