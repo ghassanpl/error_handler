@@ -48,6 +48,10 @@ namespace ghassanpl::error_handling
 		}
 	};
 
+	template <unsigned I, typename... ARGS>
+	auto& get(error_values<ARGS...>& ev) { return std::get<I>(ev.values); }
+	template <unsigned I, typename... ARGS>
+	auto const& get(error_values<ARGS...> const& ev) { return std::get<I>(ev.values); }
 
 	template <typename... ARGS>
 	struct error_handler_handle

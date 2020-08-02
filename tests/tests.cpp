@@ -15,7 +15,7 @@ TEST(error_handler, return_values)
 {
 	error_values<int> ret;
 	read(5, ret);
-	EXPECT_EQ(std::get<0>(ret.values), 5);
+	EXPECT_EQ(get<0>(ret), 5);
 }
 
 TEST(error_handler, throws)
@@ -24,16 +24,23 @@ TEST(error_handler, throws)
 }
 
 
-void read(int from, std::string str, multi_error_handler_handle<error_handler<int>, error_handler<std::string>> handler = {})
-{
-	handler.error(from);
-	handler.error("hello");
-	handler.error(typeid(from));
-}
-
 TEST(multi_error_handler, throws)
 {
-	
+	auto read = [](int from, std::string str, multi_error_handler_handle<error_handler<int>, error_handler<std::string>> handler = {}) {
+		if (from == 0)
+			handler.error(from);
+		else
+			handler.error("hello");
+	};
+	EXPECT_THROW(read(0, "hello"), generic_value_exception<int>);
+	EXPECT_THROW(read(5, "hello"), generic_value_exception<std::string>);
+
+	error_values<int> e1;
+	error_values<std::string> e2;
+	read(0, "hello", { e1, e2 });
+	EXPECT_EQ(get<0>(e1), 0);
+	read(5, "hello", { e1, e2 });
+	EXPECT_EQ(get<0>(e2), "hello");
 }
 
 int main(int argc, char** argv)

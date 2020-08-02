@@ -29,7 +29,7 @@ namespace ghassanpl::error_handling
 		multi_error_handler_handle(HANDLERS&... handlers)
 			: mHandlers(handlers...) {}
 		multi_error_handler_handle()
-			: mHandlers(mDefaultHandlers) {}
+			: mHandlers(std::make_from_tuple<decltype(mHandlers)>(mDefaultHandlers)) {}
 
 		template <typename... ARGS>
 		requires (can_error_with<HANDLERS, ARGS...> || ...)
