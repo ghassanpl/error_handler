@@ -63,6 +63,11 @@ namespace ghassanpl::error_handling
 			error_handler_handle(T& handler)
 			: mHandler(handler) {}
 
+		error_handler_handle(error_handler_handle&) = default;
+
+		template <typename T>
+		error_handler_handle(T&&) = delete;
+
 		error_handler_handle()
 			: mHandler(mDefaultHandler) {}
 

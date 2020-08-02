@@ -23,6 +23,17 @@ TEST(error_handler, throws)
 	EXPECT_THROW(read(5), generic_value_exception<int>);
 }
 
+TEST(error_handler, chainable)
+{
+	auto read1 = [](error_handler_handle<int> handler) {
+		handler.error(10);
+	};
+	auto read2 = [&read1](error_handler_handle<int> handler) {
+		read1(handler);
+	};
+	EXPECT_THROW(read2({}), generic_value_exception<int>);
+}
+
 TEST(multi_error_handler, throws)
 {
 	auto read = [](int from, std::string str, multi_error_handler_handle<error_handler<int>, error_handler<std::string>> handler = {}) {
@@ -39,6 +50,23 @@ TEST(multi_error_handler, throws)
 	read(0, "hello", { e1, e2 });
 	EXPECT_EQ(get<0>(e1), 0);
 	read(5, "hello", { e1, e2 });
+	EXPECT_EQ(get<0>(e2), "hello");
+}
+
+TEST(multi_error_handler, chainable)
+{
+	using handle_type = multi_error_handler_handle<error_handler<int>, error_handler<std::string>>;
+	auto read1 = [](handle_type handler) {
+		handler.error(10);
+	};
+	auto read2 = [&read1](handle_type handler) {
+		handler.error("hello");
+		read1(handler);
+	};
+	error_values<int> e1;
+	error_values<std::string> e2;
+	read2({ e1, e2 });
+	EXPECT_EQ(get<0>(e1), 10);
 	EXPECT_EQ(get<0>(e2), "hello");
 }
 
